@@ -87,4 +87,34 @@ class WebsiteTest < ActionDispatch::IntegrationTest
     assert_equal expected_total, charities.to_a.map(&:reload).sum(&:total)
     assert_equal t("website.donate.success"), flash[:notice]
   end
+
+  test "that someone can donate Bahts and Satangs" do
+    charity = charities(:children)
+    initial_total = charity.total
+    expected_total = initial_total + (77.77 * 100).to_i
+
+    post(donate_path, params: {
+           amount: "77.77", omise_token: "tokn_X", charity: charity.id
+         })
+    follow_redirect!
+
+    assert_template :index
+    assert_equal t("website.donate.success"), flash[:notice]
+    assert_equal expected_total, charity.reload.total
+  end
+
+  test "that someone can't donate less than a Satang" do
+    charity = charities(:children)
+    initial_total = charity.total
+    expected_total = initial_total + (77.77 * 100).to_i
+
+    post(donate_path, params: {
+           amount: "77.77111111111", omise_token: "tokn_X", charity: charity.id
+         })
+    follow_redirect!
+
+    assert_template :index
+    assert_equal t("website.donate.success"), flash[:notice]
+    assert_equal expected_total, charity.reload.total
+  end
 end
