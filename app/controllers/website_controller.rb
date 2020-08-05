@@ -5,6 +5,7 @@ class WebsiteController < ApplicationController
 
   def donate
     charity = Charity.find_by(id: params[:charity])
+    charity ||= randomize_charity if params[:charity] == 'random'
     if params[:omise_token].present?
       unless params[:amount].blank? || params[:amount].to_i <= 20
         unless !charity
@@ -75,5 +76,10 @@ class WebsiteController < ApplicationController
     else
       Omise::Token.retrieve(token)
     end
+  end
+
+  def randomize_charity
+    charities = Charity.all
+    return charities.sample
   end
 end
