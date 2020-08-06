@@ -34,10 +34,25 @@ class ActiveSupport::TestCase
       paid: (amount.to_i != 999)
     })
 
-    Omise::Charge.stub :create, stub_charge do
-      post(donate_path, params: {
-        amount: amount, omise_token: omise_token, charity: charity_id
+    stub_token = OpenStruct.new({
+      id: "tokn_X",
+      card: OpenStruct.new({
+        name: "J DOE",
+        last_digits: "4242",
+        expiration_month: 10,
+        expiration_year: 2020,
+        security_code_check: false,
+        })
       })
+      
+
+    Omise::Charge.stub :create, stub_charge do
+      Omise::Token.stub :retrieve, stub_token do
+        post(donate_path, params: {
+          amount: amount, omise_token: omise_token, charity: charity_id
+        })
+      end
     end
+
   end
 end

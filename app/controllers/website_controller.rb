@@ -12,6 +12,7 @@ class WebsiteController < ApplicationController
       card: params[:omise_token],
       description: "Donation to #{@charity.name} [#{@charity.id}]",
     })
+
     if charge.paid
       @charity.credit_amount(charge.amount)
       flash.notice = t(".success")
@@ -23,27 +24,10 @@ class WebsiteController < ApplicationController
 
   private
 
-  def retrieve_token(token)
-    if Rails.env.test?
-      OpenStruct.new({
-        id: "tokn_X",
-        card: OpenStruct.new({
-          name: "J DOE",
-          last_digits: "4242",
-          expiration_month: 10,
-          expiration_year: 2020,
-          security_code_check: false,
-        }),
-      })
-    else
-      Omise::Token.retrieve(token)
-    end
-  end
-
   def check_token
     failure_procedure unless params[:omise_token].present?
 
-    @token = retrieve_token(params[:omise_token])
+    @token = Omise::Token.retrieve(params[:omise_token])
   end
 
   def check_amount

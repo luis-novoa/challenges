@@ -8,9 +8,7 @@ class WebsiteTest < ActionDispatch::IntegrationTest
   end
 
   test "that someone can't donate to no charity" do
-    post(donate_path, params: {
-           amount: "100", omise_token: "tokn_X", charity: ""
-         })
+    stub_donation_post("100", "tokn_X", "")
 
     assert_template :index
     assert_equal t("website.donate.failure"), flash.now[:alert]
@@ -18,9 +16,7 @@ class WebsiteTest < ActionDispatch::IntegrationTest
 
   test "that someone can't donate 0 to a charity" do
     charity = charities(:children)
-    post(donate_path, params: {
-           amount: "0", omise_token: "tokn_X", charity: charity.id
-         })
+    stub_donation_post("0", "tokn_X", charity.id)
 
     assert_template :index
     assert_equal t("website.donate.failure"), flash.now[:alert]
@@ -28,9 +24,7 @@ class WebsiteTest < ActionDispatch::IntegrationTest
 
   test "that someone can't donate less than 20 to a charity" do
     charity = charities(:children)
-    post(donate_path, params: {
-           amount: "19", omise_token: "tokn_X", charity: charity.id
-         })
+    stub_donation_post("19", "tokn_X", charity.id)
 
     assert_template :index
     assert_equal t("website.donate.failure"), flash.now[:alert]
@@ -38,9 +32,7 @@ class WebsiteTest < ActionDispatch::IntegrationTest
 
   test "that someone can't donate without a token" do
     charity = charities(:children)
-    post(donate_path, params: {
-           amount: "100", charity: charity.id
-         })
+    stub_donation_post("100", nil, charity.id)
 
     assert_template :index
     assert_equal t("website.donate.failure"), flash.now[:alert]
