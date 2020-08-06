@@ -51,9 +51,7 @@ class WebsiteTest < ActionDispatch::IntegrationTest
     initial_total = charity.total
     expected_total = initial_total + (100 * 100)
 
-    post(donate_path, params: {
-           amount: "100", omise_token: "tokn_X", charity: charity.id
-         })
+    stub_donation_post("100", "tokn_X", charity.id)
     follow_redirect!
 
     assert_template :index
@@ -65,9 +63,7 @@ class WebsiteTest < ActionDispatch::IntegrationTest
     charity = charities(:children)
 
     # 999 is used to set paid as false
-    post(donate_path, params: {
-           amount: "999", omise_token: "tokn_X", charity: charity.id
-         })
+    stub_donation_post("999", "tokn_X", charity.id)
 
     assert_template :index
     assert_equal t("website.donate.failure"), flash.now[:alert]
@@ -78,9 +74,7 @@ class WebsiteTest < ActionDispatch::IntegrationTest
     initial_total = charities.to_a.sum(&:total)
     expected_total = initial_total + (100 * 100)
 
-    post(donate_path, params: {
-           amount: "100", omise_token: "tokn_X", charity: "random"
-         })
+    stub_donation_post("100", "tokn_X", "random")
     follow_redirect!
 
     assert_template :index
@@ -88,14 +82,12 @@ class WebsiteTest < ActionDispatch::IntegrationTest
     assert_equal t("website.donate.success"), flash[:notice]
   end
 
-  test "that someone can donate Bahts and Satangs" do
+  test "that we can donate Bahts and Satangs" do
     charity = charities(:children)
     initial_total = charity.total
     expected_total = initial_total + (77.77 * 100).to_i
 
-    post(donate_path, params: {
-           amount: "77.77", omise_token: "tokn_X", charity: charity.id
-         })
+    stub_donation_post("77.77", "tokn_X", charity.id)
     follow_redirect!
 
     assert_template :index
@@ -103,14 +95,12 @@ class WebsiteTest < ActionDispatch::IntegrationTest
     assert_equal expected_total, charity.reload.total
   end
 
-  test "that someone can't donate less than a Satang" do
+  test "that we can't donate less than a Satang" do
     charity = charities(:children)
     initial_total = charity.total
     expected_total = initial_total + (77.77 * 100).to_i
 
-    post(donate_path, params: {
-           amount: "77.77111111111", omise_token: "tokn_X", charity: charity.id
-         })
+    stub_donation_post("77.77111111111", "tokn_X", charity.id)
     follow_redirect!
 
     assert_template :index
